@@ -5,9 +5,6 @@ package xyz.jingzztech.prac.nio;
 
 import java.nio.ByteBuffer;
 
-import org.apache.log4j.helpers.BoundedFIFO;
-import org.junit.experimental.theories.Theories;
-
 /**
  * @author jingzz
  * @time 2015年11月25日 下午3:43:29
@@ -36,7 +33,9 @@ public class ByteBufferMethodsAnalytical {
 	}
 	
 	/*
-	 * 缓冲区使用了构建器模式串联各个方法
+	 * 缓冲区使用了构建器模式串联各个方法。
+	 * 
+	 * 缓冲区产生的目的就是为了提高数据的传输效率
 	 * 
 	 * 缓冲区四种属性： 容量（Capacity）、上界（limit）、位置（Position）、标记（mark）
 	 * 容量：缓冲区能够容纳的数据元素的最大数量，该容量在创建时设定，一旦设定，不可被修改。
@@ -87,15 +86,34 @@ public class ByteBufferMethodsAnalytical {
 		
 		buffer.compact();
 		
+		/**
+		 * 比较两个ByteBuffer。this 和 that
+		 * 
+		 * 返回结果：this 小于that ，返回负数；
+		 * this 等于that，返回0；
+		 * this 大于 that ，返回整数。
+		 * 返回的数字大小就是一般是this和that中第一个不同元素的ASCII的差值。如果所有值都相等，那么返回的值就是this和that剩余元素的差值。
+		 * 
+		 * 不允许不同对象间进行比较，如果传递了类型错误的对象，会抛出ClassCastException异常
+		 * 
+		 * 两个缓冲区比较是对剩余元素进行的，直到不相等的元素被发现或者到达limit上限。
+		 * 如果一个缓冲区在不相等元素发现前，剩余元素被耗尽，该缓冲区被认为小于另一个缓冲区。
+		 * 
+		 * 该方法的比较是不可交换的，因为this.compareTo(that)如果获取到负值，那that.compareTo(this) 返回的就是正值了。
+		 * 
+		 */
 		buffer.compareTo(buffer);
 		
 		buffer.duplicate();
-		
+			
 		/**
 		 * 两个缓冲区相等需要满足三个条件：
 		 * 1，相同的元素类型
-		 * 2，拥有相同数量的剩余元素
-		 * 3，这两个剩余元素序列，它们的起始位置单独考虑，逐点相同
+		 * 2，拥有相同数量的剩余元素（Buffer容量不需要相同，缓冲区中剩余数据的索引也不必相同）
+		 * 3，在每个缓冲区中应被get()方法返回的数据元素序列必须一致
+		 * 
+		 * 以上条件可以在两个拥有不同属性的缓冲区可能相等，两个相似的缓冲区，甚至看起来完全相同的缓冲区不一定相等。
+		 * 
 		 */
 		buffer.equals(buffer);
 		
@@ -104,6 +122,15 @@ public class ByteBufferMethodsAnalytical {
 		 */
 		buffer.flip();
 		
+		/**
+		 * 缓冲区批量移动有两种方式：将一个数组作为参数，然后将缓冲区数据释放到数组中；
+		 * 另一个是使用offset和length参数指定目标数组的子区间，截取移动缓冲区数据的一部分。
+		 */
+		
+		/**
+		 * 记得在调用该方法前先查询缓冲区内元素的数量。
+		 * 调用get()方法会向前移动position属性，所以之后调用remaining()会返回0
+		 */
 		buffer.get();
 		
 		buffer.get(capacity);
@@ -113,7 +140,16 @@ public class ByteBufferMethodsAnalytical {
 		int length = 0;
 		int offset = 0;
 		byte[] dst = null;
+		/**
+		 * 获取指定长度的数据元素
+		 */
 		buffer.get(dst, offset, length);
+		
+		/*
+		 *注意：buffer.get(dst);当传入的 一个数组没有指定长度，相当于要求整个数据被填充，而此时如果缓冲区内的元素不足以将数组填充满，
+		 *程序就会抛出异常
+		 */
+		
 		
 		buffer.get(dst);
 		
@@ -169,6 +205,9 @@ public class ByteBufferMethodsAnalytical {
 		int newPosition = 0;
 		buffer.position(newPosition);
 		
+		/**
+		 * 相当于 put(src, 0, src.length)，因为内部调用的就是该方法
+		 */
 		buffer.put(dst);
 		
 		buffer.position();
@@ -176,9 +215,24 @@ public class ByteBufferMethodsAnalytical {
 		buffer.put((byte)'2');
 		
 		ByteBuffer src = null;
+		/**
+		 * 将数据在两个缓冲区之间批量传递
+		 * buffer是target 缓冲区，参数引用是src缓冲区
+		 * 
+		 * 内部使用了for循环将src内的元素存储在buffer中，而存储过程是调用的put(byte)方法
+		 * 
+		 * 当然在传递之前会检查各种条件是否成立,比如：
+		 * 1，src不能是target自身
+		 * 2.，target不能是只读属性
+		 * 3，src.remaining()的大小不能大于target.remaining();
+		 * 等等
+		 */
 		buffer.put(src);
 		
 		byte b = 0;
+		/**
+		 * 为指定位置index赋值为b
+		 */
 		buffer.put(index, b);
 		
 		buffer.put(null, offset, length);
