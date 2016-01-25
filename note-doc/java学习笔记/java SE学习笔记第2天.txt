@@ -1,0 +1,22 @@
+命名规范:
+	类名:首字母大写,单词间首字母大写
+	变量名:首字母小写,单词间首字母大写
+
+类型转黄:
+	两个byte或者short变量相加的结果类型为int
+	通过 Float.parseInt(string) 将字符串转换为基本数据类型 
+
+	//已知今天星期六,问n天后星期几,n天前 
+	num=(day+6)%7;
+	num1=6-day%7;
+
+	与或非的运算:是否短路
+		int j=10;
+		int i=100;
+		//boolean b=i<100 && ++j<10;
+		//boolean b=i<100 & ++j<10;
+		//boolean b=i<101 || ++j<10;
+		boolean b=i<101 | ++j<10;
+
+	switch case中 条件类型为 char int short byte
+	在jdk 1.7中String 也能作为条件

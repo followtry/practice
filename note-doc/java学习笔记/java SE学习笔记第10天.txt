@@ -1,0 +1,30 @@
+﻿时间:9:07 2014-8-18
+
+从 ResultSet中查值时既可以用名也可以用索引数字,推荐用字段名
+
+时间:14:07 2014-8-18 	
+PreparedStatement
+
+使用statement容易造成sql注入
+
+String sql="insert into student(sname,sex,age) values(?,?,?)";	
+		PreparedStatement pst=cn.prepareStatement(sql);//预编译
+		pst.setObject(1, "张博");
+		pst.setObject(2, "男");
+		pst.setObject(3, 21);
+		pst.executeUpdate();
+
+PreparedStatement 与Statement的区别(面试时);
+
+PreparedStatement能预编译,防止简单的sql注入;
+
+分层编写:
+jdbc :数据库操作
+dao  :数据库表的操作,dao方法不能调用dao方法
+bean :数据库表的映射实体类
+service :调用dao方法,完成一件事.
+
+contral : 调用service ,完成业务
+
+在同一个Connection中才有相同的事务
+
