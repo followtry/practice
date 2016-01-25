@@ -58,7 +58,14 @@ https://{username}:{pwd}@github.com
 ```
 **注意：** 只要在git服务器(如：github)上添加了公钥，.git-credentials在你第一次输入完用户名和密码后会自动建立的。
 
-
+### 2.同一个git项目提交到多个远程仓库（gitLab）
+修改项目中.git目录下的config文件
+```
+[remote "origin"]
+	url = https://git.oschina.net/xxx/yyy.git
+	url = https://github.com/xxx/yyy.git
+```
+添加哪个仓库，就将哪个仓库的git链接添加到如上代码位置，同时记得将公钥添加到新仓库中，否则每次提交的都需要输入用户名和密码的哦！
 
 
 
