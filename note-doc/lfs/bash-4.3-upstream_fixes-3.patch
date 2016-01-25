@@ -1,0 +1,820 @@
+Submitted By:            Bruce Dubbs <bdubbs_at_linuxfromscratch_dot_org>
+Updated By:              Armin K. <krejzi at email dot com>
+Date:                    2014-08-20
+Initial Package Version: 4.3
+Upstream Status:         Already in upstream patch repo
+Origin:                  Upstream
+Description:             This patch contains upstream patch numbers 001 thru 024.
+
+--- a/arrayfunc.c	2013-08-02 22:19:59.000000000 +0200
++++ b/arrayfunc.c	2014-08-20 19:01:36.644084084 +0200
+@@ -179,6 +179,7 @@
+     array_insert (array_cell (entry), ind, newval);
+   FREE (newval);
+ 
++  VUNSETATTR (entry, att_invisible);	/* no longer invisible */
+   return (entry);
+ }
+ 
+@@ -597,6 +598,11 @@
+       if (assoc_p (var))
+ 	{
+ 	  val = expand_assignment_string_to_string (val, 0);
++	  if (val == 0)
++	    {
++	      val = (char *)xmalloc (1);
++	      val[0] = '\0';	/* like do_assignment_internal */
++	    }
+ 	  free_val = 1;
+ 	}
+ 
+--- a/bashline.c	2014-02-10 01:56:58.000000000 +0100
++++ b/bashline.c	2014-08-20 19:01:36.644084084 +0200
+@@ -4167,9 +4167,16 @@
+   int qc;
+ 
+   qc = rl_dispatching ? rl_completion_quote_character : 0;  
+-  dfn = bash_dequote_filename ((char *)text, qc);
++  /* If rl_completion_found_quote != 0, rl_completion_matches will call the
++     filename dequoting function, causing the directory name to be dequoted
++     twice. */
++  if (rl_dispatching && rl_completion_found_quote == 0)
++    dfn = bash_dequote_filename ((char *)text, qc);
++  else
++    dfn = (char *)text;
+   m1 = rl_completion_matches (dfn, rl_filename_completion_function);
+-  free (dfn);
++  if (dfn != text)
++    free (dfn);
+ 
+   if (m1 == 0 || m1[0] == 0)
+     return m1;
+--- a/builtins/read.def	2013-09-02 17:54:00.000000000 +0200
++++ b/builtins/read.def	2014-08-20 19:01:36.645084103 +0200
+@@ -442,7 +442,10 @@
+       add_unwind_protect (reset_alarm, (char *)NULL);
+ #if defined (READLINE)
+       if (edit)
+-	add_unwind_protect (reset_attempted_completion_function, (char *)NULL);
++	{
++	  add_unwind_protect (reset_attempted_completion_function, (char *)NULL);
++	  add_unwind_protect (bashline_reset_event_hook, (char *)NULL);
++	}
+ #endif
+       falarm (tmsec, tmusec);
+     }
+@@ -1021,6 +1024,7 @@
+ 
+   old_attempted_completion_function = rl_attempted_completion_function;
+   rl_attempted_completion_function = (rl_completion_func_t *)NULL;
++  bashline_set_event_hook ();
+   if (itext)
+     {
+       old_startup_hook = rl_startup_hook;
+@@ -1032,6 +1036,7 @@
+ 
+   rl_attempted_completion_function = old_attempted_completion_function;
+   old_attempted_completion_function = (rl_completion_func_t *)NULL;
++  bashline_reset_event_hook ();
+ 
+   if (ret == 0)
+     return ret;
+--- a/execute_cmd.c	2014-01-31 16:54:52.000000000 +0100
++++ b/execute_cmd.c	2014-08-20 19:01:36.645084103 +0200
+@@ -2409,7 +2409,16 @@
+ #endif
+       lstdin = wait_for (lastpid);
+ #if defined (JOB_CONTROL)
+-      exec_result = job_exit_status (lastpipe_jid);
++      /* If wait_for removes the job from the jobs table, use result of last
++	 command as pipeline's exit status as usual.  The jobs list can get
++	 frozen and unfrozen at inconvenient times if there are multiple pipelines
++	 running simultaneously. */
++      if (INVALID_JOB (lastpipe_jid) == 0)
++	exec_result = job_exit_status (lastpipe_jid);
++      else if (pipefail_opt)
++	exec_result = exec_result | lstdin;	/* XXX */
++      /* otherwise we use exec_result */
++        
+ #endif
+       unfreeze_jobs_list ();
+     }
+--- a/externs.h	2014-01-02 20:58:20.000000000 +0100
++++ b/externs.h	2014-08-20 19:01:36.646084120 +0200
+@@ -324,6 +324,7 @@
+ extern char *sh_backslash_quote __P((char *, const char *, int));
+ extern char *sh_backslash_quote_for_double_quotes __P((char *));
+ extern int sh_contains_shell_metas __P((char *));
++extern int sh_contains_quotes __P((char *));
+ 
+ /* declarations for functions defined in lib/sh/spell.c */
+ extern int spname __P((char *, char *));
+--- a/jobs.c	2014-01-10 15:05:34.000000000 +0100
++++ b/jobs.c	2014-08-20 19:01:36.646084120 +0200
+@@ -3597,6 +3597,7 @@
+   unwind_protect_int (jobs_list_frozen);
+   unwind_protect_pointer (the_pipeline);
+   unwind_protect_pointer (subst_assign_varlist);
++  unwind_protect_pointer (this_shell_builtin);
+ 
+   /* We have to add the commands this way because they will be run
+      in reverse order of adding.  We don't want maybe_set_sigchld_trap ()
+@@ -4374,7 +4375,7 @@
+ void
+ end_job_control ()
+ {
+-  if (interactive_shell)		/* XXX - should it be interactive? */
++  if (interactive_shell || job_control)		/* XXX - should it be just job_control? */
+     {
+       terminate_stopped_jobs ();
+ 
+--- a/lib/glob/glob.c	2014-02-01 03:43:51.000000000 +0100
++++ b/lib/glob/glob.c	2014-08-20 19:01:36.647084133 +0200
+@@ -123,6 +123,8 @@
+ extern char *glob_patscan __P((char *, char *, int));
+ extern wchar_t *glob_patscan_wc __P((wchar_t *, wchar_t *, int));
+ 
++extern char *glob_dirscan __P((char *, int));
++
+ /* Compile `glob_loop.c' for single-byte characters. */
+ #define CHAR	unsigned char
+ #define INT	int
+@@ -179,42 +181,53 @@
+      char *pat, *dname;
+      int flags;
+ {
+-  char *pp, *pe, *t;
+-  int n, r;
++  char *pp, *pe, *t, *se;
++  int n, r, negate;
+ 
++  negate = *pat == '!';
+   pp = pat + 2;
+-  pe = pp + strlen (pp) - 1;	/*(*/
+-  if (*pe != ')')
++  se = pp + strlen (pp) - 1;		/* end of string */
++  pe = glob_patscan (pp, se, 0);	/* end of extglob pattern (( */
++  /* we should check for invalid extglob pattern here */
++  if (pe == 0)
+     return 0;
+-  if ((t = strchr (pp, '|')) == 0)	/* easy case first */
++
++  /* if pe != se we have more of the pattern at the end of the extglob
++     pattern. Check the easy case first ( */
++  if (pe == se && *pe == ')' && (t = strchr (pp, '|')) == 0)
+     {
+       *pe = '\0';
++#if defined (HANDLE_MULTIBYTE)
++      r = mbskipname (pp, dname, flags);
++#else
+       r = skipname (pp, dname, flags);	/*(*/
++#endif
+       *pe = ')';
+       return r;
+     }
++
++  /* check every subpattern */
+   while (t = glob_patscan (pp, pe, '|'))
+     {
+       n = t[-1];
+       t[-1] = '\0';
++#if defined (HANDLE_MULTIBYTE)
++      r = mbskipname (pp, dname, flags);
++#else
+       r = skipname (pp, dname, flags);
++#endif
+       t[-1] = n;
+       if (r == 0)	/* if any pattern says not skip, we don't skip */
+         return r;
+       pp = t;
+     }	/*(*/
+ 
+-  if (pp == pe)		/* glob_patscan might find end of pattern */
++  /* glob_patscan might find end of pattern */
++  if (pp == se)
+     return r;
+ 
+-  *pe = '\0';
+-#  if defined (HANDLE_MULTIBYTE)
+-  r = mbskipname (pp, dname, flags);	/*(*/
+-#  else
+-  r = skipname (pp, dname, flags);	/*(*/
+-#  endif
+-  *pe = ')';
+-  return r;
++  /* but if it doesn't then we didn't match a leading dot */
++  return 0;
+ }
+ #endif
+ 
+@@ -277,20 +290,23 @@
+      int flags;
+ {
+ #if EXTENDED_GLOB
+-  wchar_t *pp, *pe, *t, n;
+-  int r;
++  wchar_t *pp, *pe, *t, n, *se;
++  int r, negate;
+ 
++  negate = *pat == L'!';
+   pp = pat + 2;
+-  pe = pp + wcslen (pp) - 1;	/*(*/
+-  if (*pe != L')')
+-    return 0;
+-  if ((t = wcschr (pp, L'|')) == 0)
++  se = pp + wcslen (pp) - 1;	/*(*/
++  pe = glob_patscan_wc (pp, se, 0);
++
++  if (pe == se && *pe == ')' && (t = wcschr (pp, L'|')) == 0)
+     {
+       *pe = L'\0';
+       r = wchkname (pp, dname); /*(*/
+       *pe = L')';
+       return r;
+     }
++
++  /* check every subpattern */
+   while (t = glob_patscan_wc (pp, pe, '|'))
+     {
+       n = t[-1];
+@@ -305,10 +321,8 @@
+   if (pp == pe)		/* glob_patscan_wc might find end of pattern */
+     return r;
+ 
+-  *pe = L'\0';
+-  r = wchkname (pp, dname);	/*(*/
+-  *pe = L')';
+-  return r;
++  /* but if it doesn't then we didn't match a leading dot */
++  return 0;
+ #else
+   return (wchkname (pat, dname));
+ #endif
+@@ -1006,7 +1020,7 @@
+ {
+   char **result;
+   unsigned int result_size;
+-  char *directory_name, *filename, *dname;
++  char *directory_name, *filename, *dname, *fn;
+   unsigned int directory_len;
+   int free_dirname;			/* flag */
+   int dflags;
+@@ -1022,6 +1036,18 @@
+ 
+   /* Find the filename.  */
+   filename = strrchr (pathname, '/');
++#if defined (EXTENDED_GLOB)
++  if (filename && extended_glob)
++    {
++      fn = glob_dirscan (pathname, '/');
++#if DEBUG_MATCHING
++      if (fn != filename)
++	fprintf (stderr, "glob_filename: glob_dirscan: fn (%s) != filename (%s)\n", fn ? fn : "(null)", filename);
++#endif
++      filename = fn;
++    }
++#endif
++
+   if (filename == NULL)
+     {
+       filename = pathname;
+--- a/lib/glob/gmisc.c	2013-10-28 19:45:25.000000000 +0100
++++ b/lib/glob/gmisc.c	2014-08-20 19:01:36.647084133 +0200
+@@ -42,6 +42,8 @@
+ #define WLPAREN         L'('
+ #define WRPAREN         L')'
+ 
++extern char *glob_patscan __P((char *, char *, int));
++
+ /* Return 1 of the first character of WSTRING could match the first
+    character of pattern WPAT.  Wide character version. */
+ int
+@@ -210,6 +212,7 @@
+     case '+':
+     case '!':
+     case '@':
++    case '?':
+       return (pat[1] == LPAREN);
+     default:
+       return 0;
+@@ -374,3 +377,34 @@
+ 
+   return matlen;
+ }
++
++/* Skip characters in PAT and return the final occurrence of DIRSEP.  This
++   is only called when extended_glob is set, so we have to skip over extglob
++   patterns x(...) */
++char *
++glob_dirscan (pat, dirsep)
++     char *pat;
++     int dirsep;
++{
++  char *p, *d, *pe, *se;
++
++  d = pe = se = 0;
++  for (p = pat; p && *p; p++)
++    {
++      if (extglob_pattern_p (p))
++	{
++	  if (se == 0)
++	    se = p + strlen (p) - 1;
++	  pe = glob_patscan (p + 2, se, 0);
++	  if (pe == 0)
++	    continue;
++	  else if (*pe == 0)
++	    break;
++	  p = pe - 1;	/* will do increment above */
++	  continue;
++	}
++      if (*p ==  dirsep)
++	d = p;
++    }
++  return d;
++}
+--- a/lib/readline/display.c	2013-12-27 19:10:56.000000000 +0100
++++ b/lib/readline/display.c	2014-08-20 19:01:36.647084133 +0200
+@@ -1637,7 +1637,7 @@
+   /* If we are changing the number of invisible characters in a line, and
+      the spot of first difference is before the end of the invisible chars,
+      lendiff needs to be adjusted. */
+-  if (current_line == 0 && !_rl_horizontal_scroll_mode &&
++  if (current_line == 0 && /* !_rl_horizontal_scroll_mode && */
+       current_invis_chars != visible_wrap_offset)
+     {
+       if (MB_CUR_MAX > 1 && rl_byte_oriented == 0)
+@@ -1825,8 +1825,13 @@
+ 	      else
+ 		_rl_last_c_pos += bytes_to_insert;
+ 
++	      /* XXX - we only want to do this if we are at the end of the line
++		 so we move there with _rl_move_cursor_relative */
+ 	      if (_rl_horizontal_scroll_mode && ((oe-old) > (ne-new)))
+-		goto clear_rest_of_line;
++		{
++		  _rl_move_cursor_relative (ne-new, new);
++		  goto clear_rest_of_line;
++		}
+ 	    }
+ 	}
+       /* Otherwise, print over the existing material. */
+@@ -2677,7 +2682,8 @@
+ {
+   if (_rl_echoing_p)
+     {
+-      _rl_move_vert (_rl_vis_botlin);
++      if (_rl_vis_botlin > 0)	/* minor optimization plus bug fix */
++	_rl_move_vert (_rl_vis_botlin);
+       _rl_vis_botlin = 0;
+       fflush (rl_outstream);
+       rl_restart_output (1, 0);
+--- a/lib/readline/input.c	2014-01-10 21:07:08.000000000 +0100
++++ b/lib/readline/input.c	2014-08-20 19:01:36.647084133 +0200
+@@ -534,8 +534,16 @@
+ 	return (RL_ISSTATE (RL_STATE_READCMD) ? READERR : EOF);
+       else if (_rl_caught_signal == SIGHUP || _rl_caught_signal == SIGTERM)
+ 	return (RL_ISSTATE (RL_STATE_READCMD) ? READERR : EOF);
++      /* keyboard-generated signals of interest */
+       else if (_rl_caught_signal == SIGINT || _rl_caught_signal == SIGQUIT)
+         RL_CHECK_SIGNALS ();
++      /* non-keyboard-generated signals of interest */
++      else if (_rl_caught_signal == SIGALRM
++#if defined (SIGVTALRM)
++		|| _rl_caught_signal == SIGVTALRM
++#endif
++	      )
++        RL_CHECK_SIGNALS ();
+ 
+       if (rl_signal_event_hook)
+ 	(*rl_signal_event_hook) ();
+--- a/lib/readline/misc.c	2012-09-02 00:03:11.000000000 +0200
++++ b/lib/readline/misc.c	2014-08-20 19:01:36.648084145 +0200
+@@ -461,6 +461,7 @@
+ 	    saved_undo_list = 0;
+ 	  /* Set up rl_line_buffer and other variables from history entry */
+ 	  rl_replace_from_history (entry, 0);	/* entry->line is now current */
++	  entry->data = 0;			/* entry->data is now current undo list */
+ 	  /* Undo all changes to this history entry */
+ 	  while (rl_undo_list)
+ 	    rl_do_undo ();
+@@ -468,7 +469,6 @@
+ 	     the timestamp. */
+ 	  FREE (entry->line);
+ 	  entry->line = savestring (rl_line_buffer);
+-	  entry->data = 0;
+ 	}
+       entry = previous_history ();
+     }
+--- a/lib/readline/readline.c	2013-10-28 19:58:06.000000000 +0100
++++ b/lib/readline/readline.c	2014-08-20 19:01:36.648084145 +0200
+@@ -744,7 +744,8 @@
+     r = _rl_subseq_result (r, cxt->oldmap, cxt->okey, (cxt->flags & KSEQ_SUBSEQ));
+ 
+   RL_CHECK_SIGNALS ();
+-  if (r == 0)			/* success! */
++  /* We only treat values < 0 specially to simulate recursion. */
++  if (r >= 0 || (r == -1 && (cxt->flags & KSEQ_SUBSEQ) == 0))	/* success! or failure! */
+     {
+       _rl_keyseq_chain_dispose ();
+       RL_UNSETSTATE (RL_STATE_MULTIKEY);
+@@ -964,7 +965,7 @@
+ #if defined (VI_MODE)
+   if (rl_editing_mode == vi_mode && _rl_keymap == vi_movement_keymap &&
+       key != ANYOTHERKEY &&
+-      rl_key_sequence_length == 1 &&	/* XXX */
++      _rl_dispatching_keymap == vi_movement_keymap &&
+       _rl_vi_textmod_command (key))
+     _rl_vi_set_last (key, rl_numeric_arg, rl_arg_sign);
+ #endif
+--- a/lib/sh/shquote.c	2013-04-01 03:53:32.000000000 +0200
++++ b/lib/sh/shquote.c	2014-08-20 19:01:36.648084145 +0200
+@@ -311,3 +311,17 @@
+ 
+   return (0);
+ }
++
++int
++sh_contains_quotes (string)
++     char *string;
++{
++  char *s;
++
++  for (s = string; s && *s; s++)
++    {
++      if (*s == '\'' || *s == '"' || *s == '\\')
++	return 1;
++    }
++  return 0;
++}
+--- a/parse.y	2014-02-11 15:42:10.000000000 +0100
++++ b/parse.y	2014-08-20 19:01:36.649084157 +0200
+@@ -2424,7 +2424,7 @@
+ 	 not already end in an EOF character.  */
+       if (shell_input_line_terminator != EOF)
+ 	{
+-	  if (shell_input_line_size < SIZE_MAX && shell_input_line_len > shell_input_line_size - 3)
++	  if (shell_input_line_size < SIZE_MAX-3 && (shell_input_line_len+3 > shell_input_line_size))
+ 	    shell_input_line = (char *)xrealloc (shell_input_line,
+ 					1 + (shell_input_line_size += 2));
+ 
+@@ -2642,7 +2642,7 @@
+   int r;
+ 
+   r = 0;
+-  while (need_here_doc)
++  while (need_here_doc > 0)
+     {
+       parser_state |= PST_HEREDOC;
+       make_here_document (redir_stack[r++], line_number);
+@@ -3398,7 +3398,7 @@
+          within a double-quoted ${...} construct "an even number of
+          unescaped double-quotes or single-quotes, if any, shall occur." */
+       /* This was changed in Austin Group Interp 221 */
+-      if MBTEST(posixly_correct && shell_compatibility_level > 41 && dolbrace_state != DOLBRACE_QUOTE && (flags & P_DQUOTE) && (flags & P_DOLBRACE) && ch == '\'')
++      if MBTEST(posixly_correct && shell_compatibility_level > 41 && dolbrace_state != DOLBRACE_QUOTE && dolbrace_state != DOLBRACE_QUOTE2 && (flags & P_DQUOTE) && (flags & P_DOLBRACE) && ch == '\'')
+ 	continue;
+ 
+       /* Could also check open == '`' if we want to parse grouping constructs
+@@ -6075,6 +6075,7 @@
+ 
+   ps->expand_aliases = expand_aliases;
+   ps->echo_input_at_read = echo_input_at_read;
++  ps->need_here_doc = need_here_doc;
+ 
+   ps->token = token;
+   ps->token_buffer_size = token_buffer_size;
+@@ -6123,6 +6124,7 @@
+ 
+   expand_aliases = ps->expand_aliases;
+   echo_input_at_read = ps->echo_input_at_read;
++  need_here_doc = ps->need_here_doc;
+ 
+   FREE (token);
+   token = ps->token;
+--- a/patchlevel.h	2012-12-29 16:47:57.000000000 +0100
++++ b/patchlevel.h	2014-08-20 19:02:02.453429757 +0200
+@@ -25,6 +25,6 @@
+    regexp `^#define[ 	]*PATCHLEVEL', since that's what support/mkversion.sh
+    looks for to find the patch level (for the sccs version string). */
+ 
+-#define PATCHLEVEL 0
++#define PATCHLEVEL 24
+ 
+ #endif /* _PATCHLEVEL_H_ */
+--- a/pcomplete.c	2013-08-26 21:23:45.000000000 +0200
++++ b/pcomplete.c	2014-08-20 19:01:36.875087175 +0200
+@@ -183,6 +183,7 @@
+ 
+ COMPSPEC *pcomp_curcs;
+ const char *pcomp_curcmd;
++const char *pcomp_curtxt;
+ 
+ #ifdef DEBUG
+ /* Debugging code */
+@@ -753,6 +754,32 @@
+ 	     quoted strings. */
+ 	  dfn = (*rl_filename_dequoting_function) ((char *)text, rl_completion_quote_character);
+ 	}
++      /* Intended to solve a mismatched assumption by bash-completion.  If
++	 the text to be completed is empty, but bash-completion turns it into
++	 a quoted string ('') assuming that this code will dequote it before
++	 calling readline, do the dequoting. */
++      else if (iscompgen && iscompleting &&
++	       pcomp_curtxt && *pcomp_curtxt == 0 &&
++	       text && (*text == '\'' || *text == '"') && text[1] == text[0] && text[2] == 0 && 
++	       rl_filename_dequoting_function)
++	dfn = (*rl_filename_dequoting_function) ((char *)text, rl_completion_quote_character);
++      /* Another mismatched assumption by bash-completion.  If compgen is being
++      	 run as part of bash-completion, and the argument to compgen is not
++      	 the same as the word originally passed to the programmable completion
++      	 code, dequote the argument if it has quote characters.  It's an
++      	 attempt to detect when bash-completion is quoting its filename
++      	 argument before calling compgen. */
++      /* We could check whether gen_shell_function_matches is in the call
++	 stack by checking whether the gen-shell-function-matches tag is in
++	 the unwind-protect stack, but there's no function to do that yet.
++	 We could simply check whether we're executing in a function by
++	 checking variable_context, and may end up doing that. */
++      else if (iscompgen && iscompleting && rl_filename_dequoting_function &&
++	       pcomp_curtxt && text &&
++	       STREQ (pcomp_curtxt, text) == 0 &&
++	       variable_context &&
++	       sh_contains_quotes (text))	/* guess */
++	dfn = (*rl_filename_dequoting_function) ((char *)text, rl_completion_quote_character);
+       else
+ 	dfn = savestring (text);
+     }
+@@ -1522,7 +1549,7 @@
+      COMPSPEC **lastcs;
+ {
+   COMPSPEC *cs, *oldcs;
+-  const char *oldcmd;
++  const char *oldcmd, *oldtxt;
+   STRINGLIST *ret;
+ 
+   cs = progcomp_search (ocmd);
+@@ -1545,14 +1572,17 @@
+ 
+   oldcs = pcomp_curcs;
+   oldcmd = pcomp_curcmd;
++  oldtxt = pcomp_curtxt;
+ 
+   pcomp_curcs = cs;
+   pcomp_curcmd = cmd;
++  pcomp_curtxt = word;
+ 
+   ret = gen_compspec_completions (cs, cmd, word, start, end, foundp);
+ 
+   pcomp_curcs = oldcs;
+   pcomp_curcmd = oldcmd;
++  pcomp_curtxt = oldtxt;
+ 
+   /* We need to conditionally handle setting *retryp here */
+   if (retryp)
+--- a/shell.h	2012-12-26 03:11:01.000000000 +0100
++++ b/shell.h	2014-08-20 19:01:36.875087175 +0200
+@@ -168,7 +168,8 @@
+   /* flags state affecting the parser */
+   int expand_aliases;
+   int echo_input_at_read;
+-  
++  int need_here_doc;
++
+ } sh_parser_state_t;
+ 
+ typedef struct _sh_input_line_state_t {
+--- a/subst.c	2014-01-23 22:26:37.000000000 +0100
++++ b/subst.c	2014-08-20 19:02:02.452429745 +0200
+@@ -1192,12 +1192,18 @@
+    Start extracting at (SINDEX) as if we had just seen "<(".
+    Make (SINDEX) get the position of the matching ")". */ /*))*/
+ char *
+-extract_process_subst (string, starter, sindex)
++extract_process_subst (string, starter, sindex, xflags)
+      char *string;
+      char *starter;
+      int *sindex;
++     int xflags;
+ {
++#if 0
+   return (extract_delimited_string (string, sindex, starter, "(", ")", SX_COMMAND));
++#else
++  xflags |= (no_longjmp_on_fatal_error ? SX_NOLONGJMP : 0);
++  return (xparse_dolparen (string, string+*sindex, sindex, xflags));
++#endif
+ }
+ #endif /* PROCESS_SUBSTITUTION */
+ 
+@@ -1785,7 +1791,7 @@
+ 	  si = i + 2;
+ 	  if (string[si] == '\0')
+ 	    CQ_RETURN(si);
+-	  temp = extract_process_subst (string, (c == '<') ? "<(" : ">(", &si);
++	  temp = extract_process_subst (string, (c == '<') ? "<(" : ">(", &si, 0);
+ 	  free (temp);		/* no SX_ALLOC here */
+ 	  i = si;
+ 	  if (string[i] == '\0')
+@@ -3248,8 +3254,10 @@
+   if (w->word == 0 || w->word[0] == '\0')
+     return ((char *)NULL);
+ 
++  expand_no_split_dollar_star = 1;
+   w->flags |= W_NOSPLIT2;
+   l = call_expand_word_internal (w, 0, 0, (int *)0, (int *)0);
++  expand_no_split_dollar_star = 0;
+   if (l)
+     {
+       if (special == 0)			/* LHS */
+@@ -7366,7 +7374,13 @@
+     }
+ 
+   if (want_indir)
+-    tdesc = parameter_brace_expand_indir (name + 1, var_is_special, quoted, quoted_dollar_atp, contains_dollar_at);
++    {
++      tdesc = parameter_brace_expand_indir (name + 1, var_is_special, quoted, quoted_dollar_atp, contains_dollar_at);
++      /* Turn off the W_ARRAYIND flag because there is no way for this function
++	 to return the index we're supposed to be using. */
++      if (tdesc && tdesc->flags)
++	tdesc->flags &= ~W_ARRAYIND;
++    }
+   else
+     tdesc = parameter_brace_expand_word (name, var_is_special, quoted, PF_IGNUNBOUND|(pflags&(PF_NOSPLIT2|PF_ASSIGNRHS)), &ind);
+ 
+@@ -7847,6 +7861,10 @@
+ 	 We also want to make sure that splitting is done no matter what --
+ 	 according to POSIX.2, this expands to a list of the positional
+ 	 parameters no matter what IFS is set to. */
++      /* XXX - what to do when in a context where word splitting is not
++	 performed? Even when IFS is not the default, posix seems to imply
++	 that we behave like unquoted $* ?  Maybe we should use PF_NOSPLIT2
++	 here. */
+       temp = string_list_dollar_at (list, (pflags & PF_ASSIGNRHS) ? (quoted|Q_DOUBLE_QUOTES) : quoted);
+ 
+       tflag |= W_DOLLARAT;
+@@ -8243,7 +8261,7 @@
+ 	    else
+ 	      t_index = sindex + 1; /* skip past both '<' and LPAREN */
+ 
+-	    temp1 = extract_process_subst (string, (c == '<') ? "<(" : ">(", &t_index); /*))*/
++	    temp1 = extract_process_subst (string, (c == '<') ? "<(" : ">(", &t_index, 0); /*))*/
+ 	    sindex = t_index;
+ 
+ 	    /* If the process substitution specification is `<()', we want to
+@@ -8816,6 +8834,7 @@
+   else
+     {
+       char *ifs_chars;
++      char *tstring;
+ 
+       ifs_chars = (quoted_dollar_at || has_dollar_at) ? ifs_value : (char *)NULL;
+ 
+@@ -8830,11 +8849,36 @@
+ 	 regardless of what else has happened to IFS since the expansion. */
+       if (split_on_spaces)
+ 	list = list_string (istring, " ", 1);	/* XXX quoted == 1? */
++      /* If we have $@ (has_dollar_at != 0) and we are in a context where we
++	 don't want to split the result (W_NOSPLIT2), and we are not quoted,
++	 we have already separated the arguments with the first character of
++	 $IFS.  In this case, we want to return a list with a single word
++	 with the separator possibly replaced with a space (it's what other
++	 shells seem to do).
++	 quoted_dollar_at is internal to this function and is set if we are
++	 passed an argument that is unquoted (quoted == 0) but we encounter a
++	 double-quoted $@ while expanding it. */
++      else if (has_dollar_at && quoted_dollar_at == 0 && ifs_chars && quoted == 0 && (word->flags & W_NOSPLIT2))
++	{
++	  /* Only split and rejoin if we have to */
++	  if (*ifs_chars && *ifs_chars != ' ')
++	    {
++	      list = list_string (istring, *ifs_chars ? ifs_chars : " ", 1);
++	      tstring = string_list (list);
++	    }
++	  else
++	    tstring = istring;
++	  tword = make_bare_word (tstring);
++	  if (tstring != istring)
++	    free (tstring);
++	  goto set_word_flags;
++	}
+       else if (has_dollar_at && ifs_chars)
+ 	list = list_string (istring, *ifs_chars ? ifs_chars : " ", 1);
+       else
+ 	{
+ 	  tword = make_bare_word (istring);
++set_word_flags:
+ 	  if ((quoted & (Q_DOUBLE_QUOTES|Q_HERE_DOCUMENT)) || (quoted_state == WHOLLY_QUOTED))
+ 	    tword->flags |= W_QUOTED;
+ 	  if (word->flags & W_ASSIGNMENT)
+--- a/subst.h	2014-01-12 03:02:27.000000000 +0100
++++ b/subst.h	2014-08-20 19:01:51.986289557 +0200
+@@ -82,7 +82,7 @@
+ /* Extract the <( or >( construct in STRING, and return a new string.
+    Start extracting at (SINDEX) as if we had just seen "<(".
+    Make (SINDEX) get the position just after the matching ")". */
+-extern char *extract_process_subst __P((char *, char *, int *));
++extern char *extract_process_subst __P((char *, char *, int *, int));
+ #endif /* PROCESS_SUBSTITUTION */
+ 
+ /* Extract the name of the variable to bind to from the assignment string. */
+--- a/test.c	2014-02-04 22:52:58.000000000 +0100
++++ b/test.c	2014-08-20 19:01:36.877087205 +0200
+@@ -646,8 +646,8 @@
+       return (v && invisible_p (v) == 0 && var_isset (v) ? TRUE : FALSE);
+ 
+     case 'R':
+-      v = find_variable (arg);
+-      return (v && invisible_p (v) == 0 && var_isset (v) && nameref_p (v) ? TRUE : FALSE);
++      v = find_variable_noref (arg);
++      return ((v && invisible_p (v) == 0 && var_isset (v) && nameref_p (v)) ? TRUE : FALSE);
+     }
+ 
+   /* We can't actually get here, but this shuts up gcc. */
+@@ -723,6 +723,7 @@
+     case 'o': case 'p': case 'r': case 's': case 't':
+     case 'u': case 'v': case 'w': case 'x': case 'z':
+     case 'G': case 'L': case 'O': case 'S': case 'N':
++    case 'R':
+       return (1);
+     }
+ 
+--- a/trap.c	2014-02-05 16:03:21.000000000 +0100
++++ b/trap.c	2014-08-20 19:01:36.877087205 +0200
+@@ -920,7 +920,8 @@
+       subst_assign_varlist = 0;
+ 
+ #if defined (JOB_CONTROL)
+-      save_pipeline (1);	/* XXX only provides one save level */
++      if (sig != DEBUG_TRAP)	/* run_debug_trap does this */
++	save_pipeline (1);	/* XXX only provides one save level */
+ #endif
+ 
+       /* If we're in a function, make sure return longjmps come here, too. */
+@@ -940,7 +941,8 @@
+       trap_exit_value = last_command_exit_value;
+ 
+ #if defined (JOB_CONTROL)
+-      restore_pipeline (1);
++      if (sig != DEBUG_TRAP)	/* run_debug_trap does this */
++	restore_pipeline (1);
+ #endif
+ 
+       subst_assign_varlist = save_subst_varlist;
+--- a/variables.c	2014-02-14 17:55:12.000000000 +0100
++++ b/variables.c	2014-08-20 19:01:36.878087223 +0200
+@@ -2197,10 +2197,7 @@
+   /* local foo; local foo;  is a no-op. */
+   old_var = find_variable (name);
+   if (old_var && local_p (old_var) && old_var->context == variable_context)
+-    {
+-      VUNSETATTR (old_var, att_invisible);	/* XXX */
+-      return (old_var);
+-    }
++    return (old_var);
+ 
+   was_tmpvar = old_var && tempvar_p (old_var);
+   /* If we're making a local variable in a shell function, the temporary env
+--- a/y.tab.c	2014-02-11 16:57:47.000000000 +0100
++++ b/y.tab.c	2014-08-20 19:01:36.879087240 +0200
+@@ -4736,7 +4736,7 @@
+ 	 not already end in an EOF character.  */
+       if (shell_input_line_terminator != EOF)
+ 	{
+-	  if (shell_input_line_size < SIZE_MAX && shell_input_line_len > shell_input_line_size - 3)
++	  if (shell_input_line_size < SIZE_MAX-3 && (shell_input_line_len+3 > shell_input_line_size))
+ 	    shell_input_line = (char *)xrealloc (shell_input_line,
+ 					1 + (shell_input_line_size += 2));
+ 
+@@ -4954,7 +4954,7 @@
+   int r;
+ 
+   r = 0;
+-  while (need_here_doc)
++  while (need_here_doc > 0)
+     {
+       parser_state |= PST_HEREDOC;
+       make_here_document (redir_stack[r++], line_number);
+@@ -5710,7 +5710,7 @@
+          within a double-quoted ${...} construct "an even number of
+          unescaped double-quotes or single-quotes, if any, shall occur." */
+       /* This was changed in Austin Group Interp 221 */
+-      if MBTEST(posixly_correct && shell_compatibility_level > 41 && dolbrace_state != DOLBRACE_QUOTE && (flags & P_DQUOTE) && (flags & P_DOLBRACE) && ch == '\'')
++      if MBTEST(posixly_correct && shell_compatibility_level > 41 && dolbrace_state != DOLBRACE_QUOTE && dolbrace_state != DOLBRACE_QUOTE2 && (flags & P_DQUOTE) && (flags & P_DOLBRACE) && ch == '\'')
+ 	continue;
+ 
+       /* Could also check open == '`' if we want to parse grouping constructs
+@@ -8387,6 +8387,7 @@
+ 
+   ps->expand_aliases = expand_aliases;
+   ps->echo_input_at_read = echo_input_at_read;
++  ps->need_here_doc = need_here_doc;
+ 
+   ps->token = token;
+   ps->token_buffer_size = token_buffer_size;
+@@ -8435,6 +8436,7 @@
+ 
+   expand_aliases = ps->expand_aliases;
+   echo_input_at_read = ps->echo_input_at_read;
++  need_here_doc = ps->need_here_doc;
+ 
+   FREE (token);
+   token = ps->token;

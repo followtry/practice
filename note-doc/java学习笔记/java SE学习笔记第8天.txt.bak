@@ -1,0 +1,20 @@
+﻿IO流
+字节流  FileInputStream\FileOutputStream
+	FileInputStream fInputStream=new  FileInputStream(oldFile);
+	FileOutputStream fOutputStream=new FileOutputStream(newFile,true);
+	// 确定文件的大小
+	//int fileSize = fInputStream.available();
+
+	byte[] strByte = new byte[1024*1024*2];
+	System.out.println("设置的缓冲区大小:"+strByte.length/1024.0+"K");
+	int len=0;
+	int count=0;
+        while((len=fInputStream.read(strByte))!= -1){
+           // String str1=new String(strByte);
+            System.out.println(len/1024.0+"K 缓冲区循环第"+(++count)+"次");
+            fOutputStream.write(strByte,0,len);     
+        }
+
+
+
+字符流 FileReader \FileWriter  \bufferedReader bufferedWriter

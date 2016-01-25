@@ -1,0 +1,7 @@
+ dao:data access object 
+ eao:entity access object
+ dto:data transfer object 
+ ioc:inversion of Control 控制反转
+ gof：Gang of four
+ jstl:java standard tag library 标签库
+ javaEE:java  platform enterprise edition
