@@ -4,4 +4,4 @@ Eclipse的eclipse目录下的eclipse.ini配置文件，会有一个
 
 /********************-- 项目因误操作删除maven依赖包后重新转为maven项目 --**********************/
 
-右击项目 -> configure ->convert to maven project 即可恢复为maven项目
+右击项目 -> configure ->convert to maven project 即可恢复为maven项目 
