@@ -94,3 +94,23 @@ mybatis疑问
 	  <foreach collection="list" item="item" index="index" open="(" close=")" separator="union all">
 	    SELECT #{item.name} as a, #{item.age} as b
 	  </foreach>
+22. Mybatis中模糊查询的各种写法
+	1. sql中字符串拼接
+	   SELECT * FROM tableName WHERE name LIKE CONCAT(CONCAT('%', #{text}), '%');
+	 
+	2. 使用 ${...} 代替 #{...}
+	   SELECT * FROM tableName WHERE name LIKE '%${text}%';
+	 
+	3. 程序中拼接
+	   Java
+	   // String searchText = "%" + text + "%";
+	   String searchText = new StringBuilder("%").append(text).append("%").toString();
+	   parameterMap.put("text", searchText);
+	 
+	   SqlMap.xml
+	   SELECT * FROM tableName WHERE name LIKE #{text};
+	 
+	4. 大小写匹配查询
+	   SELECT *  FROM TABLENAME  WHERE UPPER(SUBSYSTEM) LIKE '%' || UPPER('jz') || '%'
+	   或者 
+	   SELECT *   FROM TABLENAME  WHERE LOWER(SUBSYSTEM) LIKE '%' || LOWER('jz') || '%'

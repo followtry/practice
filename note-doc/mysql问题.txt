@@ -17,3 +17,6 @@ Constant, random or timezone-dependent expressions in (sub)partitioning function
 select count(DISTINCT userid) activeUsers,DATE_FORMAT(logintime,'%Y-%m-%d %H:%i:%s') date,MONTH(logintime) month,DAY(logintime) day,HOUR(logintime) hour ,MONTH(logintime) month from user_login where logintime >= ? and logintime < ? GROUP BY DAY(logintime) 
 
 2015-12-7 00:00:00(String), 2016-1-6 00:00:00(String)
+
+5.where语句中同时出现and和or时的用法
+	解决办法：将多个OR用小括号括起来再和AND进行“与”，或者将多个AND用小括号括起来再与OR进行“或”。
