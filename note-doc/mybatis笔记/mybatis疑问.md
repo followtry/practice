@@ -1,4 +1,4 @@
-mybatis疑问
+## mybatis疑问
 1.namespace的作用
 
 2.resultMap  的使用
