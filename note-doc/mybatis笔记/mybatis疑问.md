@@ -1,63 +1,40 @@
 ## mybatis疑问
-1.namespace的作用
+### 1.namespace的作用
 
-2.resultMap  的使用
+### 2.resultMap  的使用
 
-3. 参数为对象时，可以直接指定属性，mybatis会自动寻找
+### 3. 参数为对象时，可以直接指定属性，mybatis会自动寻找
 
-4. mybatis映射文件可以直接省略
+### 4. mybatis映射文件可以直接省略
 
-5.maven目录结构src/main/java 在src/main/webapp之前前，否则controller找不到
+### 
 
 
-6.mysql 根据时间按日分组查询
+### 6.mysql 根据时间按日分组查询
+```sql
 	select count(id) ,login_time ,DATE_FORMAT(from_unixtime(login_time),'%Y-%m-%d'),DAY(from_unixtime(login_time))
 	from uc_login_history
 	where DATE_FORMAT(from_unixtime(login_time),'%Y-%m') = '2015-09'
 	GROUP BY MONTH(from_unixtime(login_time)),DAY(from_unixtime(login_time))
-
-7.mysql不允许远程连接
+```
+### 7.mysql不允许远程连接
 
 	将名为mysql数据库的users表中对应用户的host改为%
 
-8.解决mysql > 和 < 问题
+### 8.解决mysql > 和 < 问题
 	解决办法：加上 <![CDATA[ 和 ]]>
-
+```sql
 	<![CDATA[ 
 		 uc_login_history.login_time >= ${startDate}
 		and uc_login_history.login_time < ${endDate}
 	]]>
+```
 
-11.删除git自带的右键功能，解决右键反映老慢的问题
-	打开注册表，搜索Git-Cheetah，将所有能查到的都删掉
-
-12.将命令行添加到右键
-	打开注册表，找到 [HKEY_CLASSESS_ROOT\Folder\shell]
-		新建项：自定义名称 | 新建子项 command | 右侧默认值处填写C:\Windows\System32\cmd.exe "%1"
-		%1 代表在当前位置打开
-
-	其他软件的快捷命令也可以这样添加
-
-13.多个自定义程序快捷启动
-	新建文件夹存放要快捷启动的程序快捷方式（比如名为"百度云"） | 将该文件夹路径添加到环境变量的path中 | WIN+ R | 输入“百度云” | 回车就能启动程序了
-
-
-14. mybatis 配置文件 错误：3 字节的 UTF-8 序列的字节 3 无效 
+### 14. mybatis 配置文件 错误：3 字节的 UTF-8 序列的字节 3 无效 
 	删除配置文件中的中文
 
-15.jquery 设置当前元素样式和同级其他元素样式
-	$(this).css('background','#FFFFFF');
-	//设置当前元素的同级元素样式
-	$(this).siblings().css('background','#F5F7FA');
-
-16.删除元素
-	$("elem").remove();
-	$("elem").hide();
-	$("elem").show();
-	$("elem").empty();//子元素置为空
-	
-
-21.mybatis批量插入
+### 21.mybatis批量插入
+```xml
 	<insert id="batchInsertB2B" parameterType="ArrayList">
 		insert into xxxxtable(hkgs,hkgsjsda,office,asdf,ddd,ffff,supfullName,classtype,agent_type,remark)
 		<foreach collection="list" item="item" index="index" separator="union all">
@@ -72,9 +49,9 @@
 			from dual
 		</foreach>
 	</insert>
-
-	批量插入（mysql）：
-
+```
+批量插入（mysql）：
+```xml
 	<insert id="batchInsertData" parameterType="java.util.Map"><!-- java.util.List -->
 		insert into app_login_day(etpid,appid,count,date)
 		SELECT  
@@ -89,12 +66,14 @@
 			]]>
 			GROUP BY etpid,appid
 	</insert>
-
+```
+```xml
 	INSERT INTO TStudent(name,age) 
 	  <foreach collection="list" item="item" index="index" open="(" close=")" separator="union all">
 	    SELECT #{item.name} as a, #{item.age} as b
 	  </foreach>
-22. Mybatis中模糊查询的各种写法
+```
+### 22. Mybatis中模糊查询的各种写法
 	1. sql中字符串拼接
 	   SELECT * FROM tableName WHERE name LIKE CONCAT(CONCAT('%', #{text}), '%');
 	 

@@ -1,8 +1,0 @@
-myeclipse js编辑插件
-1.在线安装：Help->Install New Software...->Add...->Name: "Spket",
-Location:http://www.spket.com/update/下载完毕重启Eclipse.
-2.手动安装：到http://www.spket.com/download.html下载 Plugin 版本，下载解压后直接放置于Eclipse的dropins目录下，重启Eclipse. 
-3.下载jQuery文件，（要下载开发版本）. 
-4.设置spket ,Window -> Preferences -> Spket -> JavaScript Profiles -> New,输入“jQuery”点击OK； 选择“jQuery” 并点击“Add Library”然后在下拉条中选取“jQuery”； 选择 “jQuery”并点击“Add File”，然后选中你下载的jQuery.js 文件；设成Default; 
-5.设置js打开方式(这一步很重要,不设置的话,也不会有jQuery的智能提示), Window -> Preferences ->General-> Editors-> File Associations-> 选择*.js,将Spket JavaScript Editor设为Default。 
-6.新建一个js文件，jQuery自动提示！！
