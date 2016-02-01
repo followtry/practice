@@ -1,53 +1,53 @@
 ########startDFS.sh############
 #!/bin/sh
 #echo "waring"
-#read NAME #µÈ´ıÓÃ»§ÊäÈë²¢°ÑÊäÈëµÄÖµ¸¶¸øNAME
-NAME=$1 #½«½Å±¾µÚÒ»¸ö²ÎÊı¸³¸øNAME
+#read NAME #ç­‰å¾…ç”¨æˆ·è¾“å…¥å¹¶æŠŠè¾“å…¥çš„å€¼ä»˜ç»™NAME
+NAME=$1 #å°†è„šæœ¬ç¬¬ä¸€ä¸ªå‚æ•°èµ‹ç»™NAME
 
-#ÒıÓÃ±äÁ¿Ê±¼ÓÉÏ"{}",ÊÇ¸öºÃÏ°¹ß,ÀûÓÚshell±æ±ğ±äÁ¿±ß½ç
-if [  -z ${NAME} ]  ;then #Ä¬ÈÏÈç¹ûÎª¿Õ£¬hadoop start
+#å¼•ç”¨å˜é‡æ—¶åŠ ä¸Š"{}",æ˜¯ä¸ªå¥½ä¹ æƒ¯,åˆ©äºshellè¾¨åˆ«å˜é‡è¾¹ç•Œ
+if [  -z ${NAME} ]  ;then #é»˜è®¤å¦‚æœä¸ºç©ºï¼Œhadoop start
         echo "1.start hadoop on ${HOSTNAME}"
         start-all.sh
-elif [ "${NAME}" = "hadoop" ];then #Èç¹ûNAMEÖĞµÄÖµÎª"hadoop"£¬Ôò¼ÌĞøÖ´ĞĞif
+elif [ "${NAME}" = "hadoop" ];then #å¦‚æœNAMEä¸­çš„å€¼ä¸º"hadoop"ï¼Œåˆ™ç»§ç»­æ‰§è¡Œif
         echo "2.start hadoop on ${HOSTNAME}"
         start-all.sh
-elif [ "${NAME}" = "hbase" ] ;then #·ñÔò¾ÍÖ´ĞĞelse if
+elif [ "${NAME}" = "hbase" ] ;then #å¦åˆ™å°±æ‰§è¡Œelse if
         start-all.sh
         #for loop in 1 2 3
         NUM=1
         while [ ${NUM} -lt 4 ]
         do
                 echo "start zkServer on hadoop${NUM}"
-                ssh -t -p 22 hadoop${NUM} "/usr/local/zk/bin/zkServer.sh start" #ÏòÔ¶³Ì
-»úÆ÷·¢ËÍÃüÁî
+                ssh -t -p 22 hadoop${NUM} "/usr/local/zk/bin/zkServer.sh start" #å‘è¿œç¨‹
+æœºå™¨å‘é€å‘½ä»¤
         NUM=$[${NUM}+1]
         done
-        ssh -t -p 22 hadoop1 "/usr/local/hbase/bin/start-hbase.sh" #ÏòÔ¶³Ì»úÆ÷·¢ËÍÃüÁî
+        ssh -t -p 22 hadoop1 "/usr/local/hbase/bin/start-hbase.sh" #å‘è¿œç¨‹æœºå™¨å‘é€å‘½ä»¤
 else
 echo "error"
 
-fi #½áÊøifÃüÁî
+fi #ç»“æŸifå‘½ä»¤
 
 
 ########stopDFS.sh############
 #!/bin/sh
 #echo "waring"
-#read NAME #µÈ´ıÓÃ»§ÊäÈë²¢°ÑÊäÈëµÄÖµ¸¶¸øNAME
-NAME=$1 #½«½Å±¾µÚÒ»¸ö²ÎÊı¸³¸øNAME
-#ÒıÓÃ±äÁ¿Ê±¼ÓÉÏ"{}",ÊÇ¸öºÃÏ°¹ß,ÀûÓÚshell±æ±ğ±äÁ¿±ß½ç
-if [ -z ${NAME} ] ; then #Ä¬ÈÏ¹Ø±Õhadoop
+#read NAME #ç­‰å¾…ç”¨æˆ·è¾“å…¥å¹¶æŠŠè¾“å…¥çš„å€¼ä»˜ç»™NAME
+NAME=$1 #å°†è„šæœ¬ç¬¬ä¸€ä¸ªå‚æ•°èµ‹ç»™NAME
+#å¼•ç”¨å˜é‡æ—¶åŠ ä¸Š"{}",æ˜¯ä¸ªå¥½ä¹ æƒ¯,åˆ©äºshellè¾¨åˆ«å˜é‡è¾¹ç•Œ
+if [ -z ${NAME} ] ; then #é»˜è®¤å…³é—­hadoop
         stop-all.sh
-elif [ ${NAME} = "hadoop" ]; then #Èç¹ûNAMEÖĞµÄÖµÎª"jingzhongzhi"£¬Ôò¼ÌĞøÖ´ĞĞif
+elif [ ${NAME} = "hadoop" ]; then #å¦‚æœNAMEä¸­çš„å€¼ä¸º"jingzhongzhi"ï¼Œåˆ™ç»§ç»­æ‰§è¡Œif
         echo "shutdown hadoop cluster"
         stop-all.sh
-elif [ ${NAME} = "hbase" ] ; then #·ñÔò¾ÍÖ´ĞĞelse if
+elif [ ${NAME} = "hbase" ] ; then #å¦åˆ™å°±æ‰§è¡Œelse if
         echo "shutdown hbase on hadoop1"
-        ssh -t -p 22 hadoop1 "/usr/local/hbase/bin/stop-hbase.sh" #ÏòÔ¶³Ì»úÆ÷·¢ËÍÃüÁî
+        ssh -t -p 22 hadoop1 "/usr/local/hbase/bin/stop-hbase.sh" #å‘è¿œç¨‹æœºå™¨å‘é€å‘½ä»¤
         NUM=1
         while [ ${NUM} -lt 4 ]
         do
                 echo "shutdown hadoop${NUM}'s zkServer"
-                ssh -t -p 22 hadoop${NUM} "/usr/local/zk/bin/zkServer.sh stop" #ÏòÔ¶³Ì>»úÆ÷·¢ËÍÃüÁî
+                ssh -t -p 22 hadoop${NUM} "/usr/local/zk/bin/zkServer.sh stop" #å‘è¿œç¨‹>æœºå™¨å‘é€å‘½ä»¤
                 NUM=$[${NUM}+1]
         done
         echo "shutdwon hadoop cluster"
@@ -55,31 +55,31 @@ elif [ ${NAME} = "hbase" ] ; then #·ñÔò¾ÍÖ´ĞĞelse if
 else
         echo "error"
 
-fi #½áÊøifÃüÁî
+fi #ç»“æŸifå‘½ä»¤
 
-########²é¿´hadoopµÄ×´Ì¬###########
+########æŸ¥çœ‹hadoopçš„çŠ¶æ€###########
 #!/bin/sh
-#²é¿´hadoopµÄÔËĞĞ×´Ì¬
+#æŸ¥çœ‹hadoopçš„è¿è¡ŒçŠ¶æ€
 function hadoopState(){
         COUNT=1
         while [ ${COUNT} -le ${NUM} ]
         do
-                echo "²é¿´hadoop${COUNT}ÉÏhadoopµÄÔËĞĞ×´Ì¬"
-                #Á¬½ÓÔ¶³ÌÖ÷»ú²é¿´ÔËĞĞ×´Ì¬
+                echo "æŸ¥çœ‹hadoop${COUNT}ä¸Šhadoopçš„è¿è¡ŒçŠ¶æ€"
+                #è¿æ¥è¿œç¨‹ä¸»æœºæŸ¥çœ‹è¿è¡ŒçŠ¶æ€
                 ssh -t -p 22 hadoop${COUNT} "jps"
                 COUNT=$((${COUNT}+1))
         done
 }
 
-echo "=====²é¿´hadoopµÄÔËĞĞ×´Ì¬===="
-NUM=$1 #hadoop ¼¯ÈºµÄÊıÁ¿
-echo "ÄúÊäÈëµÄµÄNUMÎª${NUM}"
+echo "=====æŸ¥çœ‹hadoopçš„è¿è¡ŒçŠ¶æ€===="
+NUM=$1 #hadoop é›†ç¾¤çš„æ•°é‡
+echo "æ‚¨è¾“å…¥çš„çš„NUMä¸º${NUM}"
 if test !${NUM};then
         NUM=3
         hadoopState
 else
         hadoopState
 fi
-echo "=====²é¿´½áÊø===="
+echo "=====æŸ¥çœ‹ç»“æŸ===="
 
                                                

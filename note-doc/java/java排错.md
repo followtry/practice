@@ -1,5 +1,6 @@
-﻿/************************************************************/
-原因：
+﻿
+## java排错
+### 1. 错误提示：
 org.mybatis.spring.MyBatisSystemException: nested exception is org.apache.ibatis.reflection.ReflectionException: Error instantiating class com.skd.domain.User with invalid types () or values (). Cause: java.lang.NoSuchMethodException: com.skd.domain.User.<init>()
 	at org.mybatis.spring.MyBatisExceptionTranslator.translateExceptionIfPossible(MyBatisExceptionTranslator.java:75)
 	at org.mybatis.spring.SqlSessionTemplate$SqlSessionInterceptor.invoke(SqlSessionTemplate.java:371)
@@ -14,34 +15,6 @@ org.mybatis.spring.MyBatisSystemException: nested exception is org.apache.ibatis
 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:57)
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-问题原因和解决方法：
+#### 问题原因和解决方法：
 	因为com.skd.domain.User缺少了无参构造方法，添加无参构造方法即可解决问题
-
-
-/************************************************************/
-
-
-/************************************************************/
-
-
-/************************************************************/
-
-
-/************************************************************/
-
-
-/************************************************************/
-
-
-/************************************************************/
-
-
-/************************************************************/
-
-
-/************************************************************/
-
-
-/************************************************************/
-
 
