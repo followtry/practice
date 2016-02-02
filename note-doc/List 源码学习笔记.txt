@@ -1,7 +1,0 @@
-1.List 内部存储是一个临时的对象数组Object[] elementData。默认初始化时该数组为空对象，即List在以默认方式实例化时初始化大小为0；
-2.当通过add(e) 方式添加元素时，会首先将当前size+1和默认大小10比较，取较大值作为临时最小容量minCapacity，并增加list结构修改次数。然后增加list的容量大小，
-根据int newCapacity = oldCapacity + (oldCapacity >> 1); 会了解到容器大小增大为原来的额1.5倍，容量为newCapacity。将newCapacity与minCapacity比较，
-取较大值给newCapacity，然后与最大数组大小比较2147483639(2^31-9).如果minCapacity大于2147483639则newCapacity设置为2147483647(2^31-1),否则设置为2147483639。
-然后将最后得到的newCapacity作为新的容器大小，并使用Arrays.copyOf()为elementData赋值。elementData会扩容大小为newCapacity，并将原来的元素复制到新的数组中赋给elementData。
-需要了解的是，elementData的length不小于list的size大小。list的size为实际添加的元素大小，elementData的length为初始化的大小newCapacity。
-4.数组扩容完成后，将数据赋值到数组elementData中未被使用的最小下标位置，完成一次对元素的添加。

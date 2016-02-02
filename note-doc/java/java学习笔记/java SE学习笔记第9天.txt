@@ -1,0 +1,79 @@
+﻿时间:9:38 2014-8-16
+多线程:
+
+线程是一个程序内部的顺序控制流.
+
+线程和进程
+1.每个进程都有独立的代码和数据空间（进程上下文），进程切换的开销大。
+2.线程: 轻量的进程，同一类线程共享代码和数据空间，每个线程有独立的运行栈和程序计数（PC） ，线程切换的开销小。
+3.多进程： 在操作系统中能同时运行多个任务（程序）
+4.多线程：在同一应用程序中有多个顺序流同时执行
+
+在main方法中直接调用线程的run方法不算是启动多线程,只有通过thread的start的方法才可以实现多线程
+
+
+Runnable和Thread的比较:
+一. 使用Runnable接口创建线程：
+	 1.可以将CPU、代码和数据分开，形成清晰的模
+型；
+􀂃 2.线程体run()方法所在的类还可以从其他类继承
+一些有用的属性或方法；
+􀂃 3.并有利于保持程序风格的一致性。
+二. 直接继承Thread类创建线程：
+􀂃1. Thread子类无法再从其他类继承
+􀂃2. 编写简单，run()方法的当前对象就是线程对象，可直接操纵。
+
+
+进程,线程的生命周期:  新建\就绪\运行\阻塞\终止状态
+
+多线程中优先级高不代表先运行,高优先级只是多分配一些运行时间而已.
+
+
+线程是模拟多线程,java中是靠时间片轮转;
+
+===================================================================
+时间:14:09 2014-8-16
+
+JDBC体系
+
+应用层
+驱动层
+接口:
+
+Driver  Statement  ResultSet  Connection
+
+加载驱动:
+Class.forName("oracle.jdbc.driver.OracleDriver");
+
+与 new oracle.jdbc.driver.OracleDriver();一样的效果
+
+
+
+String insertUrl="insert into stu(id,name,age,msg) values(seq_stu_id.nextval,'荆中志','22','JDBC学习')";
+int n=statement.executeUpdate(insertUrl);
+System.out.println(insertUrl);
+System.out.println("成功修改的行数:"+n+"行");
+
+
+MVC思想:
+
+model view  contral
+
+model :数据模型层(
+	1、Bean：是数据库表对应的映射类；
+	2、jdbc
+	3、DAO :数据库表对应的操作
+	4、service ：服务层（要做的事）
+)
+view : 视图层\显示层（
+	1、html
+	2、jsp
+）
+contral :控制层（
+	1、servlet
+	2.struct2（action）
+）
+
+
+
+

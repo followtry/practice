@@ -60,7 +60,7 @@ https://{username}:{pwd}@github.com
 
 ### 2.同一个git项目提交到多个远程仓库（gitLab）
 修改项目中.git目录下的config文件
-```
+```bash
 [remote "origin"]
 	url = https://git.oschina.net/xxx/yyy.git
 	url = https://github.com/xxx/yyy.git

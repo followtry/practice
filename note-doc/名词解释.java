@@ -5,7 +5,7 @@ Adabas
 AQL
 Atom
 BDB
-BeansDB(¶¹°ê)
+BeansDB(è±†ç“£)
 Blob
 Blueprints
 
@@ -38,10 +38,10 @@ SSD
 TCO
 ZEO
 
-±¯¹ÛËøºÍÀÖ¹ÛËø
-×îÖÕÒ»ÖÂ
-ÈÈ±¸ÓÃ
-ÈÈ±¸·Ý
+æ‚²è§‚é”å’Œä¹è§‚é”
+æœ€ç»ˆä¸€è‡´
+çƒ­å¤‡ç”¨
+çƒ­å¤‡ä»½
 
 
 
