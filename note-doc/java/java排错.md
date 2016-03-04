@@ -1,5 +1,7 @@
 ﻿
 ## java排错
+
+
 ### 1. 错误提示：
 	org.mybatis.spring.MyBatisSystemException: nested exception is org.apache.ibatis.reflection.ReflectionException: Error instantiating class com.skd.domain.User with invalid types () or values (). Cause: java.lang.NoSuchMethodException: com.skd.domain.User.<init>()
 		at org.mybatis.spring.MyBatisExceptionTranslator.translateExceptionIfPossible(MyBatisExceptionTranslator.java:75)
@@ -46,54 +48,3 @@ maven项目中在引入dubbo包的同时还要引入javassist即：依赖包
 ```
 	
 
-### 3. SpringMVC @RequestBody接收Json对象字符串
-配置springMVC配置文件,需要的jar包spring-web-4.xx.jar 
-```xml
-	<bean id="jacksonMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
-			
-	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">
-	   <property name="messageConverters">
-	      <list>
-	         <ref bean="jacksonMessageConverter" />
-	      </list>
-	   </property>
-	</bean>
-```
-maven中引入依赖：
-```xml
-	<jackson.version>2.6.1</jackson.version>
-
-	<dependency>
-		<groupId>com.fasterxml.jackson.core</groupId>
-		<artifactId>jackson-core</artifactId>
-		<name>Jackson-core</name>
-		<version>${jackson.version}</version>
-	</dependency>
-	<dependency>
-		<groupId>com.fasterxml.jackson.core</groupId>
-		<artifactId>jackson-databind</artifactId>
-		<version>${jackson.version}</version>
-		<name>jackson-databind</name>
-	</dependency>
-	<dependency>
-		<groupId>com.fasterxml.jackson.core</groupId>
-		<artifactId>jackson-annotations</artifactId>
-		<name>Jackson-annotations</name>
-		<version>${jackson.version}</version>
-	</dependency>
-	<dependency>
-	<groupId>org.codehaus.jackson</groupId>
-		<artifactId>jackson-lgpl</artifactId>
-		<packaging>jar</packaging>
-		<name>Jackson</name>
-		<version>0.9.5</version>
-	</dependency>
-
-	<dependency>
-		<groupId>org.codehaus.jackson</groupId>
-		<artifactId>jackson-asl</artifactId>
-		<packaging>jar</packaging>
-		<name>Jackson</name>
-		<version>0.9.5</version>
-	</dependency>
-```

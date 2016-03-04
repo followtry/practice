@@ -33,22 +33,24 @@
 	{project}/.Settings/org.eclipse.wst.common.project.facet.core.xml 文件存放的project Facets选项的配置
 
 
-#### 1.8 myeclipse js编辑插件
-#### 1.8.1 安装Spket
-	在线安装：
-		Help->Install New Software...->Add...->Name: "Spket",
-		Location:http://www.spket.com/update/
-		下载完毕重启Eclipse.
-	手动安装：
-		到http://www.spket.com/download.html下载 Plugin 版本，
-		下载解压后直接放置于Eclipse的dropins目录下，重启Eclipse. 
-#### 1.8.2 下载jQuery文件，（要下载开发版本）. 
-#### 1.8.3 设置spket 
+#### 1.8 设置spket 
 	Window -> Preferences -> Spket -> JavaScript Profiles -> New,输入“jQuery”点击OK； 选择“jQuery” 并点击“Add Library”然后在下拉条中选取“jQuery”； 选择 “jQuery”并点击“Add File”，然后选中你下载的jQuery.js 文件；设成Default; 
-#### 1.8.4 设置js打开方式
+#### 1.9 设置js打开方式
 	这一步很重要,不设置的话,也不会有jQuery的智能提示。
 	Window -> Preferences ->General-> Editors-> File Associations-> 选择*.js,将Spket JavaScript Editor设为Default。 
-#### 1.8.5 新建一个js文件，jQuery自动提示！！
+#### 1.10 新建一个js文件，jQuery自动提示！！
+
+#### 1.11 修改默认的注释字体大小而不改变代码
+ 
+	window ->preferences->General ->Appearance -> Color and Fonts ->Basic ->Text Font ->edit中将字体改为Courier New ;如果字体改的不像样子,则恢复系统字体再改
+ 
+#### 1.12 显示行号
+- windows | preferences | general | editors | text editors | show line number
+	
+- 在行最前的空白部分右击选择：show  line numbers
+
+#### 1.23 设置编码 
+	windows | preferences | general | editors | text editors | spelling |  Encoding  
 
 
 

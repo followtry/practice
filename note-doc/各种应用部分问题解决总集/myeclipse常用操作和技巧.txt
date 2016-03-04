@@ -1,8 +1,8 @@
-﻿1. 显示行号：windows/preferences/general/editors/text editors/show line number
+﻿1. 显示行号：windows | preferences | general | editors | text editors | show line number
 
    在行最前的空白部分右击选择：show  line numbers
 
-2.设置编码：windows/preferences/general/editors/text editors/spelling/ Encoding  
+2.设置编码：windows | preferences | general | editors | text editors | spelling |  Encoding  
 
 3.自动提示错误
 
