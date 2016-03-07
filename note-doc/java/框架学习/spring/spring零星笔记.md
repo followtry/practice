@@ -172,8 +172,10 @@ maven中引入依赖：
 
 
 java代码：
+
 ```java
-	@RequestMapping(value="/add",produces = "plain/text; charset=UTF-8")
+	//produces = "plain/text; charset=UTF-8"
+	@RequestMapping(value="/add",produces={MediaType.APPLICATION_JSON_VALUE})
 	@ResponseBody
 	public int  createProject(@RequestBody Project project,HttpServletRequest request) {//
 		project.setStartdate(new Date());
