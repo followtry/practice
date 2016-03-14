@@ -93,3 +93,30 @@
 	   SELECT *  FROM TABLENAME  WHERE UPPER(SUBSYSTEM) LIKE '%' || UPPER('jz') || '%'
 	   或者 
 	   SELECT *   FROM TABLENAME  WHERE LOWER(SUBSYSTEM) LIKE '%' || LOWER('jz') || '%'
+	   
+
+
+### 23.mybatis 插入时返回记录主键
+```xml
+<insert id="insert" parameterType="com.yonyou.worktime.data.project.model.MemberRelation" useGeneratedKeys="true" keyProperty="id">
+```
+
+`useGeneratedKeys="true" keyProperty="id"`
+
+这两句是关键配置，指定是否使用生成的主键，主键属性名是什么
+
+
+### 24.解决错误 Value '0000-00-00 00:00:00' can not be represented as java.sql.Timestamp
+
+	mysql的datetime类型支持的范围为'1000-01-01'到'9999-12-31'，当你输入不合法的日期或者0自动转为0000-00-00 00:00:00，
+ 	而这个日期 明显不在我上面提到的范围，所以报错了
+
+
+
+
+
+
+
+
+
+
