@@ -48,10 +48,17 @@ ssh-add ~/.ssh/id\_rsa\_github
 ssh-agent bash
 ```
 再次执行上面的ssh-add命令。
+
 **在以后的clone或者add remote时，需要将config文件中的host替换为git@remote-address中的remote-address。**
 
 #### 1.5 git客户端记住用户名和密码
-使用git bash在/c/user/{userHome}/下新建文件".git-credentials",前面有“.”。在里面添加内容格式化如下：
+在/c/user/{userHome}/下的".gitconfig"文件中添加
+```shell
+[credential]
+	helper = store
+```
+
+使用git bash在/c/user/{userHome}/下新建文件".git-credentials",前面有“.”（句点）。在里面添加内容格式化如下：
 ```http
 <!-- 先检查协议时http还是https -->
 https://{username}:{pwd}@github.com
@@ -68,7 +75,11 @@ https://{username}:{pwd}@github.com
 添加哪个仓库，就将哪个仓库的git链接添加到如上代码位置，同时记得将公钥添加到新仓库中，否则每次提交的都需要输入用户名和密码的哦！
 
 
-
+### 3. tortoiseGit配置外部比较工具
+	
+	开始 | 所有程序 | TortoiseGit | settings 也可以右键选择settings | Diff viewer | 右侧上下都选择External，选择自定义的比较工具即可
+	
+	
 
 
 
