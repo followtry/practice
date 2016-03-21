@@ -1,16 +1,16 @@
-ÃüÃû¹æ·¶:
-	ÀàÃû:Ê××ÖÄ¸´óÐ´,µ¥´Ê¼äÊ××ÖÄ¸´óÐ´
-	±äÁ¿Ãû:Ê××ÖÄ¸Ð¡Ð´,µ¥´Ê¼äÊ××ÖÄ¸´óÐ´
+å‘½åè§„èŒƒ:
+	ç±»å:é¦–å­—æ¯å¤§å†™,å•è¯é—´é¦–å­—æ¯å¤§å†™
+	å˜é‡å:é¦–å­—æ¯å°å†™,å•è¯é—´é¦–å­—æ¯å¤§å†™
 
-ÀàÐÍ×ª»Æ:
-	Á½¸öbyte»òÕßshort±äÁ¿Ïà¼ÓµÄ½á¹ûÀàÐÍÎªint
-	Í¨¹ý Float.parseInt(string) ½«×Ö·û´®×ª»»Îª»ù±¾Êý¾ÝÀàÐÍ 
+ç±»åž‹è½¬é»„:
+	ä¸¤ä¸ªbyteæˆ–è€…shortå˜é‡ç›¸åŠ çš„ç»“æžœç±»åž‹ä¸ºint
+	é€šè¿‡ Float.parseInt(string) å°†å­—ç¬¦ä¸²è½¬æ¢ä¸ºåŸºæœ¬æ•°æ®ç±»åž‹ 
 
-	//ÒÑÖª½ñÌìÐÇÆÚÁù,ÎÊnÌìºóÐÇÆÚ¼¸,nÌìÇ° 
+	//å·²çŸ¥ä»Šå¤©æ˜ŸæœŸå…­,é—®nå¤©åŽæ˜ŸæœŸå‡ ,nå¤©å‰ 
 	num=(day+6)%7;
 	num1=6-day%7;
 
-	Óë»ò·ÇµÄÔËËã:ÊÇ·ñ¶ÌÂ·
+	ä¸Žæˆ–éžçš„è¿ç®—:æ˜¯å¦çŸ­è·¯
 		int j=10;
 		int i=100;
 		//boolean b=i<100 && ++j<10;
@@ -18,5 +18,5 @@
 		//boolean b=i<101 || ++j<10;
 		boolean b=i<101 | ++j<10;
 
-	switch caseÖÐ Ìõ¼þÀàÐÍÎª char int short byte
-	ÔÚjdk 1.7ÖÐString Ò²ÄÜ×÷ÎªÌõ¼þ
+	switch caseä¸­ æ¡ä»¶ç±»åž‹ä¸º char int short byte
+	åœ¨jdk 1.7ä¸­String ä¹Ÿèƒ½ä½œä¸ºæ¡ä»¶

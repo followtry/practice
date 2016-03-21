@@ -1,20 +1,20 @@
-java±Ê¼Ç¿ªÊ¼
+javaç¬”è®°å¼€å§‹
 
-	javaµÄÀúÊ·\ÓÉÀ´
-	jdkµÄÏÂÔØ°²×°
+	javaçš„åŽ†å²\ç”±æ¥
+	jdkçš„ä¸‹è½½å®‰è£…
 
-	ÔÚjava Ô´ÎÄ¼þÖÐÀàÃû¿ÉÒÔÓëÎÄ¼þÃû²»ÏàÍ¬,µ«ÊÇ±àÒëºóÉú³ÉµÄ.classÎÄ¼þÃûÓëÀàÃûÏàÍ¬,Ã¿¸öÀà¶¼Éù³Æ¶ÔÓ¦µÄ.classÎÄ¼þ,Òò´Ë²»±ØÒª½«¶à¸öÀà¶¨ÒåÔÚÒ»¸öÎÄ¼þÖÐ.public Àà±ØÐëÓëÎÄ¼þÃûÍ¬Ãû,¶øÇÒÒ»¸öÎÄ¼þÖÐÖ»ÄÜÓÐÒ»¸öpublicÀà.
+	åœ¨java æºæ–‡ä»¶ä¸­ç±»åå¯ä»¥ä¸Žæ–‡ä»¶åä¸ç›¸åŒ,ä½†æ˜¯ç¼–è¯‘åŽç”Ÿæˆçš„.classæ–‡ä»¶åä¸Žç±»åç›¸åŒ,æ¯ä¸ªç±»éƒ½å£°ç§°å¯¹åº”çš„.classæ–‡ä»¶,å› æ­¤ä¸å¿…è¦å°†å¤šä¸ªç±»å®šä¹‰åœ¨ä¸€ä¸ªæ–‡ä»¶ä¸­.public ç±»å¿…é¡»ä¸Žæ–‡ä»¶ååŒå,è€Œä¸”ä¸€ä¸ªæ–‡ä»¶ä¸­åªèƒ½æœ‰ä¸€ä¸ªpublicç±».
 	
-	javaÌØÐÔ:
-		¿çÆ½Ì¨\°²È«ÐÔ\¶àÏß³Ì\¼òµ¥\ÃæÏò¶ÔÏó\½¡×³ÐÔ
-	java»ù±¾ÀàÐÍ:
+	javaç‰¹æ€§:
+		è·¨å¹³å°\å®‰å…¨æ€§\å¤šçº¿ç¨‹\ç®€å•\é¢å‘å¯¹è±¡\å¥å£®æ€§
+	javaåŸºæœ¬ç±»åž‹:
 		byte -128 ~127
 		short  -32768~32767
 		int 	-2^31~2^31-1
 		long 	-2^63~2^63-1
-		float  ËÄ¸ö×Ö½Ú
-		double  8¸ö×Ö½Ú
-		½«Êý´æÎªlongÀàÐÍÊÇÔÚÊýºóÃæ¼ÓÉÏL
-		ÎªfloatÀàÐÍ¸³´øÐ¡ÊýµÄÖµÐèÔÚÊýºóÃæ¼ÓÉÏf,float¾«È·µ½Ð¡ÊýµãºóÁùÎ»
-		ÎªdoubleÀàÐÍ¾«
-		char ÎªÁ½¸ö×Ö½Ú
+		float  å››ä¸ªå­—èŠ‚
+		double  8ä¸ªå­—èŠ‚
+		å°†æ•°å­˜ä¸ºlongç±»åž‹æ˜¯åœ¨æ•°åŽé¢åŠ ä¸ŠL
+		ä¸ºfloatç±»åž‹èµ‹å¸¦å°æ•°çš„å€¼éœ€åœ¨æ•°åŽé¢åŠ ä¸Šf,floatç²¾ç¡®åˆ°å°æ•°ç‚¹åŽå…­ä½
+		ä¸ºdoubleç±»åž‹ç²¾
+		char ä¸ºä¸¤ä¸ªå­—èŠ‚
