@@ -4,3 +4,7 @@
 
 ### 2. int和Integer默认值
 	int的默认值为0，而Integer的默认值为null
+	
+### 3.java 中添加跨域
+	HttpServletResponse response
+	response.addHeader("Access-Control-Allow-Origin","*");
