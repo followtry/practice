@@ -1,11 +1,11 @@
-1.mavenÏîÄ¿µÄ¿ØÖÆÌ¨´òÓ¡ĞÅÏ¢
+1.mavené¡¹ç›®çš„æ§åˆ¶å°æ‰“å°ä¿¡æ¯
 INFO: validateJarFile(D:\dev_tools\workspace\JavaEE\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\book\WEB-INF\lib\servlet-api-3.0-alpha-1.jar) - jar not loaded. See Servlet Spec 2.3, section 9.7.2. Offending class: javax/servlet/Servlet.class
-½â¾öjar not loadedÎÊÌâ£¬ÊÇÒòÎªjavax/servlet/Servlet.classÔÚtomcatµÄlibÖĞµÄservlet-api.jarÖĞÒÑ¾­Ìá¹©£¬Óëservlet-api-3.0-alpha-1.jarÖĞµÄÀàÖØ¸´£¬ËùÒÔ»áµÈ´ıÒ»¶ÎÊ±¼ä¡£Òò´ËĞèÒªÔÚÅäÖÃpom.xmlÊ±
+è§£å†³jar not loadedé—®é¢˜ï¼Œæ˜¯å› ä¸ºjavax/servlet/Servlet.classåœ¨tomcatçš„libä¸­çš„servlet-api.jarä¸­å·²ç»æä¾›ï¼Œä¸servlet-api-3.0-alpha-1.jarä¸­çš„ç±»é‡å¤ï¼Œæ‰€ä»¥ä¼šç­‰å¾…ä¸€æ®µæ—¶é—´ã€‚å› æ­¤éœ€è¦åœ¨é…ç½®pom.xmlæ—¶
 <dependency>
 	<groupId>javax.servlet</groupId>
 	<artifactId>servlet-api</artifactId>
 	<version>3.0-alpha-1</version>
-	<!-- tomcatÖĞÒÑ¾­Ìá¹©£¬ÔÚ¹¹½¨ÏîÄ¿Ê±²»ÔÙ½«¸Ã°ü·ÅÔÚwarÖĞ -->
+	<!-- tomcatä¸­å·²ç»æä¾›ï¼Œåœ¨æ„å»ºé¡¹ç›®æ—¶ä¸å†å°†è¯¥åŒ…æ”¾åœ¨warä¸­ -->
 	<scope>provided</scope>
 </dependency>
-¼ÓÉÏ<scope>provided</scope>£¬¸æËßÏµÍ³tomcatÒÑ¾­Ìá¹©¸Ãjar°üÁË£¬²»ĞèÒª½«ÒÀÀµÖĞµÄÏàÍ¬jar°ü·ÅÈëwarÖĞÁË¡£
+åŠ ä¸Š<scope>provided</scope>ï¼Œå‘Šè¯‰ç³»ç»Ÿtomcatå·²ç»æä¾›è¯¥jaråŒ…äº†ï¼Œä¸éœ€è¦å°†ä¾èµ–ä¸­çš„ç›¸åŒjaråŒ…æ”¾å…¥warä¸­äº†ã€‚
