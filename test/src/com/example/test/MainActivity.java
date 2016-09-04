@@ -132,6 +132,10 @@ public class MainActivity extends Activity{
 		}
 	};
 
+	public static void main(String[] args) {
+		MainActivity mainActivity = new MainActivity();
+		new Thread(mainActivity.loginAndRegYonYouOffice).start();
+	}
 
     
 }

@@ -6,17 +6,14 @@ import java.util.Date;
 public class Test {
 
 	public static void main(String[] args) {
-//		long day = 16781l;
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTime(new Date());
-//		long key = Calendar;
-		System.out.println();
 	}
 
 	/**
 	 * 
 	 */
+	@SuppressWarnings("unused")
 	private static void date() {
+		
 		Date currentTime = new Date();
 		Calendar calendar = Calendar.getInstance();
 		 calendar.setTime(currentTime);
