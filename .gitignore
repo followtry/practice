@@ -1,7 +1,8 @@
-/testJar/.settings
-/testJar/bin
 
 bin
 .settings
 yycollege
 target
+MANIFEST.MF
+.classpath
+.project
