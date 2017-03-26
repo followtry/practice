@@ -7,4 +7,5 @@ del /a /f /s /q *.prefs
 del /a /f /s /q *.container
 del /a /f /s /q *.superType.name
 del /a /f /s /q *dtscope
+del /a /f /s /q *.iml
 pause
